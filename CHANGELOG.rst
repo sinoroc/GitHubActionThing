@@ -3,7 +3,7 @@
 
 .. Keep the current version number on line number 6
 
-1.0
+2.0
 ===
 
 

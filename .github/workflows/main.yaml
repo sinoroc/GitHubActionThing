@@ -41,6 +41,9 @@ jobs:
     name: "Create GitHub release and publish on PyPI (if tag)"
     if: "github.event_name == 'push' && startsWith(github.ref, 'refs/tags')"
     needs: ['review-job']
+    permissions:
+      contents: 'write'
+      id-token: 'write'
     runs-on: 'ubuntu-22.04'
     steps:
       - name: "Setup Python"
