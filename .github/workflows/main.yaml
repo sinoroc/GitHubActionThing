@@ -28,6 +28,7 @@ jobs:
 
     permissions:
       contents: 'write'
+      discussions: 'write'
 
     steps:
 
