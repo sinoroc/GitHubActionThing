@@ -13,8 +13,10 @@ on:
 jobs:
 
   'review-job':
+
     name: "Review for Python ${{ matrix.python-version }}"
     runs-on: 'ubuntu-22.04'
+
     strategy:
       fail-fast: true
       matrix:
@@ -23,45 +25,40 @@ jobs:
           - '3.9'
           - '3.10'
           - '3.11'
+
+    permissions:
+      contents: 'write'
+
     steps:
+
       - name: "Setup Python ${{ matrix.python-version }}"
         uses: 'actions/setup-python@v4'
         with:
           python-version: '${{ matrix.python-version }}'
+
       - name: "Install tox"
         run: 'python -m pip install tox'
+
       - name: "Checkout code"
         uses: 'actions/checkout@v3'
         with:
           fetch-depth: 0
+
       - name: "Review code for Python ${{ matrix.python-version }}"
         run: 'tox run -e py${{ matrix.python-version }}'
 
-  'release-job':
-    name: "Create GitHub release and publish on PyPI (if tag)"
-    if: "github.event_name == 'push' && startsWith(github.ref, 'refs/tags')"
-    needs: ['review-job']
-    permissions:
-      contents: 'write'
-    runs-on: 'ubuntu-22.04'
-    steps:
-      - name: "Setup Python"
-        uses: 'actions/setup-python@v4'
-        with:
-          python-version: '3.8'
-      - name: "Checkout code"
-        uses: 'actions/checkout@v3'
-        with:
-          fetch-depth: 0
-      - name: "Install tox"
-        run: 'python -m pip install tox'
-      - name: "Build distribution packages"
+      - name: "Build distribution packages with Python ${{ matrix.python-version }}"
+        if: "matrix.python-version == '3.8'"
         run: 'tox run -e package'
-      - name: "Create GitHub release"
+
+      - name: "Create GitHub release with Python ${{ matrix.python-version }}"
+        if: "matrix.python-version == '3.8' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')"
         run: 'gh release create --verify-tag "${GITHUB_REF_NAME}" dist/*'
         env:
           GITHUB_TOKEN: '${{ github.TOKEN }}'
-      - name: "Publish distribution packages on PyPI"
+
+      - name: "Publish distribution packages on PyPI with Python ${{ matrix.python-version }}"
+        if: "matrix.python-version == '3.8' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')"
         uses: 'pypa/gh-action-pypi-publish@v1.6.4'
         with:
           password: '${{ secrets.PYPI_API_TOKEN }}'
