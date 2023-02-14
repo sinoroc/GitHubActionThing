@@ -26,6 +26,9 @@ jobs:
           - '3.10'
           - '3.11'
 
+    env:
+      'BASE_PYTHON': '3.8'
+
     permissions:
       contents: 'write'
       discussions: 'write'
@@ -49,17 +52,17 @@ jobs:
         run: 'tox run -e py${{ matrix.python-version }}'
 
       - name: "Build distribution packages with Python ${{ matrix.python-version }}"
-        if: "matrix.python-version == '3.8'"
+        if: "matrix.python-version == $BASE_PYTHON"
         run: 'tox run -e package'
 
       - name: "Create GitHub release with Python ${{ matrix.python-version }}"
-        if: "matrix.python-version == '3.8' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')"
+        if: "matrix.python-version == $BASE_PYTHON && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')"
         run: 'gh release create --discussion-category "Announcements" --generate-notes --verify-tag "${GITHUB_REF_NAME}" dist/*'
         env:
           GITHUB_TOKEN: '${{ github.TOKEN }}'
 
       - name: "Publish distribution packages on PyPI with Python ${{ matrix.python-version }}"
-        if: "matrix.python-version == '3.8' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')"
+        if: "matrix.python-version == $BASE_PYTHON && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')"
         uses: 'pypa/gh-action-pypi-publish@v1.6.4'
         with:
           password: '${{ secrets.PYPI_API_TOKEN }}'
